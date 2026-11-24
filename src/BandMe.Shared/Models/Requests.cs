@@ -11,7 +11,7 @@ public class CreateBandRequest
     public string Description { get; set; } = string.Empty;
 
     [Range(2, 50)]
-    public int MaxMembers { get; set; } = 10;
+    public int MaxMembers { get; set; } = 10;  //TODO: Make this a constant somewhere
 
     [MinLength(1, ErrorMessage = "Select at least one interest tag.")]
     public List<int> SelectedTagIds { get; set; } = [];
