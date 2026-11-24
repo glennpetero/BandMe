@@ -1,0 +1,120 @@
+@page "/create"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Band-Me | Create a Band</PageTitle>
+
+<div class="container py-4" style="max-width: 720px;">
+    <h1 class="mb-2">Create a New Band</h1>
+    <p class="text-muted mb-4">Start a group around your favorite interests so others can match and join.</p>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <EditForm Model="request" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger mb-3" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Band Name</label>
+                    <InputText class="form-control" @bind-Value="request.Name"
+                               placeholder="e.g., Sunday Board Gamers" />
+                    <ValidationMessage For="() => request.Name" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Description</label>
+                    <InputTextArea class="form-control" rows="3" @bind-Value="request.Description"
+                                   placeholder="What does your group do, and when do you meet?" />
+                    <ValidationMessage For="() => request.Description" />
+                </div>
+
+                <div class="mb-3" style="max-width: 200px;">
+                    <label class="form-label fw-semibold">Max Members (2–50)</label>
+                    <InputNumber class="form-control" @bind-Value="request.MaxMembers" />
+                    <ValidationMessage For="() => request.MaxMembers" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold d-block">Select Interests (at least 1)</label>
+
+                    @if (isLoadingTags)
+                    {
+                        <p class="text-muted small">Loading interest tags...</p>
+                    }
+                    else
+                    {
+                        @foreach (var group in allTags.GroupBy(t => t.Category))
+                        {
+                            <div class="mb-2">
+                                <small class="text-uppercase text-secondary fw-bold d-block mb-1">@group.Key</small>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var tag in group)
+                                    {
+                                        bool isSelected = request.SelectedTagIds.Contains(tag.Id);
+                                        <button type="button"
+                                                class="btn btn-sm @(isSelected ? "btn-primary" : "btn-outline-secondary")"
+                                                @onclick="() => ToggleTag(tag.Id)">
+                                            @(isSelected ? "✓ " : "")@tag.Name
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    <ValidationMessage For="() => request.SelectedTagIds" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success" disabled="@isSubmitting">
+                        @(isSubmitting ? "Creating..." : "Create Band")
+                    </button>
+                    <a href="" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateBandRequest request = new();
+    private List<InterestTag> allTags = [];
+    private bool isLoadingTags = true;
+    private bool isSubmitting;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        allTags = await Http.GetFromJsonAsync<List<InterestTag>>("api/interests") ?? [];
+        isLoadingTags = false;
+    }
+
+    private void ToggleTag(int tagId)
+    {
+        if (!request.SelectedTagIds.Remove(tagId))
+            request.SelectedTagIds.Add(tagId);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+
+        var response = await Http.PostAsJsonAsync("api/bands", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("");
+        }
+        else
+        {
+            errorMessage = "Could not create band. Please check your inputs and try again.";
+        }
+
+        isSubmitting = false;
+    }
+}
