@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BandMe.Api/BandMe.Api.csproj" />
+    <Project Path="src/BandMe.Client/BandMe.Client.csproj" />
+    <Project Path="src/BandMe.Shared/BandMe.Shared.csproj" />
+  </Folder>
+</Solution>
