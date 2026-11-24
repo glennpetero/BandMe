@@ -1,6 +1,28 @@
-@BandMe.Api_HostAddress = http://localhost:5043
+@BandMe_Api_HostAddress = http://localhost:5043
 
-GET {{BandMe.Api_HostAddress}}/weatherforecast/
+### 1. Get all seeded interest tags
+GET {{BandMe_Api_HostAddress}}/api/interests
 Accept: application/json
 
-###
+### 2. Create a new Band
+POST {{BandMe_Api_HostAddress}}/api/bands
+Content-Type: application/json
+
+{
+  "name": "Weekend C# Builders",
+  "description": "A group for developers building full-stack .NET and Blazor projects together.",
+  "maxMembers": 8,
+  "selectedTagIds": [1, 2]
+}
+
+### 3. Test the Questionnaire Matching endpoint
+POST {{BandMe_Api_HostAddress}}/api/bands/match
+Content-Type: application/json
+
+{
+  "selectedTagIds": [1, 2, 6]
+}
+
+### 4. Join Band #1
+POST {{BandMe_Api_HostAddress}}/api/bands/1/join
+
